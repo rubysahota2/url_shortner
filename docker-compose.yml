@@ -1,12 +1,12 @@
-version: '3.9'
-
 services:
   web:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app/app
+      - ./backend/app:/app/app
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/urlshortener
     depends_on:
@@ -21,6 +21,17 @@ services:
       POSTGRES_DB: urlshortener
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
     restart: always
 
 volumes:
