@@ -9,10 +9,9 @@ from .database import SessionLocal, engine, Base
 
 app = FastAPI()
 
-# ✅ Add CORS FIRST
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,3 +60,48 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
     db_url.visits += 1
     db.commit()
     return RedirectResponse(db_url.original_url)
+
+@app.get("/shorten/{short_code}/info")
+def get_short_url_info(short_code: str, db: Session = Depends(get_db)):
+    db_url = crud.get_url_by_code(db, short_code)
+    if not db_url:
+        raise HTTPException(status_code=404, detail="URL not found")
+    return {
+        "short_code": db_url.short_code,
+        "original_url": db_url.original_url,
+        "created_at": db_url.created_at,
+        "expiration": db_url.expiration,
+        "visits": db_url.visits
+    }
+
+
+@app.put("/shorten/{short_code}")
+def update_url(short_code: str, url: schemas.URLCreate, db: Session = Depends(get_db)):
+
+    db_url = crud.get_url_by_code(db, short_code)
+    if not db_url:
+        raise HTTPException(status_code=404, detail="Short URL not found")
+
+
+    db_url.original_url = str(url.original_url)
+    db_url.expiration = url.expiration
+    db.commit()
+    db.refresh(db_url)
+
+    return {
+        "message": "Short URL updated",
+        "short_code": db_url.short_code,
+        "original_url": db_url.original_url,
+        "expiration": db_url.expiration
+    }
+
+@app.delete("/shorten/{short_code}")
+def delete_url(short_code: str, db: Session = Depends(get_db)):
+    db_url = crud.get_url_by_code(db, short_code)
+    if not db_url:
+        raise HTTPException(status_code=404, detail="Short URL not found")
+
+    db.delete(db_url)
+    db.commit()
+
+    return {"message": "Short URL deleted"}
