@@ -1,11 +1,13 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, ConfigDict
 from typing import Optional
 from datetime import datetime
+
 
 class URLCreate(BaseModel):
     original_url: HttpUrl
     custom_alias: Optional[str] = None
     expiration: Optional[datetime] = None
+
 
 class URLInfo(BaseModel):
     short_code: str
@@ -14,5 +16,5 @@ class URLInfo(BaseModel):
     expiration: Optional[datetime]
     visits: int
 
-    class Config:
-        orm_mode = True
+
+    model_config = ConfigDict(from_attributes=True)

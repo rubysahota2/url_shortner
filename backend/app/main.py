@@ -83,7 +83,7 @@ def update_url(short_code: str, url: schemas.URLCreate, db: Session = Depends(ge
         raise HTTPException(status_code=404, detail="Short URL not found")
 
 
-    db_url.original_url = str(url.original_url)
+    db_url.original_url = str(url.original_url).rstrip('/')
     db_url.expiration = url.expiration
     db.commit()
     db.refresh(db_url)

@@ -9,7 +9,7 @@ def create_short_url(db: Session, url_data: schemas.URLCreate):
     short_code = url_data.custom_alias or generate_short_code()
     db_url = models.URL(
         short_code=short_code,
-        original_url=str(url_data.original_url),
+        original_url=str(url_data.original_url).rstrip('/'),
         expiration=url_data.expiration
     )
     db.add(db_url)
