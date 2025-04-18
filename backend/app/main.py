@@ -19,7 +19,6 @@ app.add_middleware(
 
 Base.metadata.create_all(bind=engine)
 
-# Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -28,11 +27,7 @@ def get_db():
         db.close()
 
 @app.post("/shorten")
-def shorten_url(
-    url: schemas.URLCreate,
-    request: Request,
-    db: Session = Depends(get_db)
-):
+def shorten_url(url: schemas.URLCreate, request: Request, db: Session = Depends(get_db)):
     if url.custom_alias:
         existing_alias = crud.get_url_by_code(db, url.custom_alias)
         if existing_alias:
@@ -57,8 +52,10 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="URL not found")
     if db_url.expiration and db_url.expiration < datetime.utcnow():
         raise HTTPException(status_code=410, detail="URL expired")
+
     db_url.visits += 1
     db.commit()
+
     return RedirectResponse(db_url.original_url)
 
 @app.get("/shorten/{short_code}/info")
@@ -66,6 +63,7 @@ def get_short_url_info(short_code: str, db: Session = Depends(get_db)):
     db_url = crud.get_url_by_code(db, short_code)
     if not db_url:
         raise HTTPException(status_code=404, detail="URL not found")
+
     return {
         "short_code": db_url.short_code,
         "original_url": db_url.original_url,
@@ -74,14 +72,11 @@ def get_short_url_info(short_code: str, db: Session = Depends(get_db)):
         "visits": db_url.visits
     }
 
-
 @app.put("/shorten/{short_code}")
 def update_url(short_code: str, url: schemas.URLCreate, db: Session = Depends(get_db)):
-
     db_url = crud.get_url_by_code(db, short_code)
     if not db_url:
         raise HTTPException(status_code=404, detail="Short URL not found")
-
 
     db_url.original_url = str(url.original_url).rstrip('/')
     db_url.expiration = url.expiration
