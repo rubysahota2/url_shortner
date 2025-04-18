@@ -18,7 +18,6 @@ function App() {
 
   const handleShorten = async (event) => {
     event.preventDefault();
-
     const dataToSend = { original_url: longUrl };
     if (customAlias) dataToSend.custom_alias = customAlias;
     if (expiration) dataToSend.expiration = new Date(expiration).toISOString();
@@ -31,7 +30,6 @@ function App() {
       });
 
       const data = await response.json();
-
       if (response.ok) {
         setMessage(
           <span>
@@ -77,16 +75,16 @@ function App() {
           : 'Never expires';
 
         setOriginalUrl(
-          <>
+          <div style={{ backgroundColor: '#f0f0f0', padding: '1rem', borderRadius: '6px' }}>
             <div>
-              Original URL:{' '}
+              <strong>Original URL:</strong>{' '}
               <a href={data.original_url} target="_blank" rel="noopener noreferrer">
                 {data.original_url}
               </a>
             </div>
-            <div>Visits: {data.visits}</div>
-            <div>{expiresText}</div>
-          </>
+            <div><strong>Visits:</strong> {data.visits}</div>
+            <div><strong>{expiresText}</strong></div>
+          </div>
         );
       } else {
         setOriginalUrl('Short code not found.');
@@ -155,91 +153,112 @@ function App() {
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      <h2>Simple URL Shortener</h2>
+    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif', maxWidth: '700px', margin: '0 auto' }}>
+      <h2 style={{ textAlign: 'center', color: '#0057b8' }}>🔗 URL Shortener</h2>
 
       {/* Shorten Form */}
-      <form onSubmit={handleShorten}>
+      <form onSubmit={handleShorten} style={{ marginBottom: '2rem' }}>
+        <h3>Shorten a URL</h3>
         <input
           type="text"
           placeholder="Enter your long URL"
           value={longUrl}
           onChange={(e) => setLongUrl(e.target.value)}
-          style={{ marginRight: '1rem', width: '300px' }}
+          style={inputStyle}
         />
-
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <input
+          type="text"
+          placeholder="Custom alias (optional)"
+          value={customAlias}
+          onChange={(e) => setCustomAlias(e.target.value)}
+          style={inputStyle}
+        />
+        <label style={{ marginTop: '0.5rem' }}>
+          Expiration (optional):
           <input
-            type="text"
-            placeholder="Custom short name (optional)"
-            value={customAlias}
-            onChange={(e) => setCustomAlias(e.target.value)}
-            style={{ width: '300px', padding: '0.4rem' }}
+            type="datetime-local"
+            value={expiration}
+            onChange={(e) => setExpiration(e.target.value)}
+            style={{ ...inputStyle, marginTop: '0.25rem' }}
           />
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label htmlFor="expiration">Expiration (optional):</label>
-            <input
-              id="expiration"
-              type="datetime-local"
-              value={expiration}
-              onChange={(e) => setExpiration(e.target.value)}
-              style={{ padding: '0.4rem' }}
-            />
-          </div>
-        </div>
-
-        <button type="submit" style={{ marginTop: '1rem' }}>Shorten</button>
+        </label>
+        <button type="submit" style={buttonStyle}>Shorten</button>
+        <div style={messageStyle}>{message}</div>
       </form>
-      <div style={{ marginTop: '1rem' }}>{message}</div>
 
       {/* Lookup */}
-      <hr style={{ margin: '2rem 0' }} />
+      <hr />
       <h3>Find Original URL</h3>
       <input
         type="text"
-        placeholder="Enter short code or URL"
+        placeholder="Short code or full short URL"
         value={shortCode}
         onChange={(e) => setShortCode(e.target.value)}
-        style={{ marginRight: '1rem' }}
+        style={inputStyle}
       />
-      <button onClick={handleLookup}>Get URL</button>
+      <button onClick={handleLookup} style={buttonStyle}>Get URL</button>
       {originalUrl && <div style={{ marginTop: '1rem' }}>{originalUrl}</div>}
 
       {/* Update */}
-      <hr style={{ margin: '2rem 0' }} />
+      <hr />
       <h3>Update Short URL</h3>
       <input
         type="text"
         placeholder="Short code or full short URL"
         value={updateCode}
         onChange={(e) => setUpdateCode(e.target.value)}
-        style={{ marginRight: '1rem' }}
+        style={inputStyle}
       />
       <input
         type="text"
         placeholder="New destination URL"
         value={updateUrl}
         onChange={(e) => setUpdateUrl(e.target.value)}
-        style={{ marginRight: '1rem' }}
+        style={inputStyle}
       />
-      <button onClick={handleUpdate}>Update</button>
-      <div style={{ marginTop: '1rem' }}>{updateMessage}</div>
+      <button onClick={handleUpdate} style={buttonStyle}>Update</button>
+      <div style={messageStyle}>{updateMessage}</div>
 
       {/* Delete */}
-      <hr style={{ margin: '2rem 0' }} />
+      <hr />
       <h3>Delete Short URL</h3>
       <input
         type="text"
         placeholder="Short code or full short URL"
         value={deleteCode}
         onChange={(e) => setDeleteCode(e.target.value)}
-        style={{ marginRight: '1rem' }}
+        style={inputStyle}
       />
-      <button onClick={handleDelete}>Delete</button>
-      <div style={{ marginTop: '1rem' }}>{deleteMessage}</div>
+      <button onClick={handleDelete} style={buttonStyle}>Delete</button>
+      <div style={messageStyle}>{deleteMessage}</div>
     </div>
   );
 }
+
+const inputStyle = {
+  padding: '0.5rem',
+  width: '100%',
+  marginBottom: '0.75rem',
+  fontSize: '1rem',
+  border: '1px solid #ccc',
+  borderRadius: '4px',
+};
+
+const buttonStyle = {
+  backgroundColor: '#0057b8',
+  color: 'white',
+  border: 'none',
+  padding: '0.5rem 1rem',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  marginBottom: '1rem',
+};
+
+const messageStyle = {
+  marginTop: '1rem',
+  fontWeight: 'bold',
+  color: '#333',
+};
 
 export default App;
